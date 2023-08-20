@@ -187,3 +187,62 @@ var _ = Describe("ReadLastNLines", func() {
 		Expect(err).To(BeNil())
 	})
 })
+
+var _ = Describe("ReadLastNLinesWithQuery", func() {
+	It("works for small files", func() {
+		expectedLines := []string{
+			"Line 69 this line contains a random animal: dragon",
+			"Line 68 this line contains a random animal: dragon",
+			"Line 41 this line contains a random animal: dragon",
+			"Line 39 this line contains a random animal: dragon",
+			"Line 33 this line contains a random animal: dragon",
+		}
+		lines, err := file.ReadLastNLinesWithQuery("5KB.txt", 10, "dragon")
+		Expect(len(lines)).To(Equal(10))
+		Expect(lines[5:]).To(Equal(expectedLines))
+		Expect(err).To(BeNil())
+	})
+
+	It("works for medium files", func() {
+		expectedLines := []string{
+			"Line 98813 this line contains a random animal: ox",
+			"Line 98812 this line contains a random animal: ox",
+			"Line 98810 this line contains a random animal: ox",
+			"Line 98809 this line contains a random animal: ox",
+			"Line 98806 this line contains a random animal: ox",
+		}
+		lines, err := file.ReadLastNLinesWithQuery("5MB.txt", 100, "ox")
+		Expect(len(lines)).To(Equal(100))
+		Expect(lines[95:]).To(Equal(expectedLines))
+		Expect(err).To(BeNil())
+	})
+
+	It("works for large files", func() {
+		expectedLines := []string{
+			"Line 18803427 this line contains a random animal: snake",
+			"Line 18803418 this line contains a random animal: snake",
+			"Line 18803417 this line contains a random animal: snake",
+			"Line 18803416 this line contains a random animal: snake",
+			"Line 18803410 this line contains a random animal: snake",
+		}
+		lines, err := file.ReadLastNLinesWithQuery("1GB.txt", 100000, "snake")
+		Expect(len(lines)).To(Equal(100000))
+		Expect(lines[99995:]).To(Equal(expectedLines))
+		Expect(err).To(BeNil())
+	})
+
+	It("works for large files for longer queries", func() {
+		expectedLines := []string{
+			"Line 19000005 this line contains a random animal: horse",
+			"Line 19000004 this line contains a random animal: snake",
+			"Line 19000003 this line contains a random animal: dog",
+			"Line 19000002 this line contains a random animal: pig",
+			"Line 19000001 this line contains a random animal: snake",
+		}
+		lines, err := file.ReadLastNLinesWithQuery("1GB.txt", 1000000,
+			"this line contains a random animal")
+		Expect(len(lines)).To(Equal(1000000))
+		Expect(lines[999995:]).To(Equal(expectedLines))
+		Expect(err).To(BeNil())
+	})
+})
