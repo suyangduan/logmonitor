@@ -216,3 +216,36 @@ func ReadLastLinesWithOffset(fileName string, fileOffset int64, initBufSize int)
 
 	return lastLines, int64(bufSize) - indices[0] - 1 + fileOffset, nil
 }
+
+func ReadLastNLines(fileName string, n int) ([]string, error) {
+	stat, err := os.Stat(fileName)
+	if err != nil {
+		panic(err)
+	}
+
+	fileSize := stat.Size()
+	initBufSize := 128
+	// if the fileSize is bigger than 16MB, use a bigger buffer size
+	// TODO: the numbers are a bit random right now
+	if fileSize > 1<<24 {
+		initBufSize = 1 << 15
+	}
+
+	lines := []string{}
+	var fileOffset int64 = 0
+	newlines := []string{"dummy"}
+	for len(lines) < n && len(newlines) != 0 {
+		newlines, fileOffset, err = ReadLastLinesWithOffset(fileName, fileOffset, initBufSize)
+		if err != nil {
+			panic(err)
+		}
+
+		lines = append(lines, newlines...)
+	}
+
+	if len(lines) >= n {
+		return lines[:n], nil
+	}
+
+	return lines, nil
+}

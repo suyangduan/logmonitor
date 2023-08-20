@@ -143,3 +143,47 @@ var _ = Describe("ReadLastLinesWithOffset", func() {
 		//Expect(lines[len(lines)-2:]).To(Equal(expectedLinesEnd))
 	})
 })
+
+var _ = Describe("ReadLastNLines", func() {
+	It("works for small files", func() {
+		expectedLines := []string{
+			"Line 5 this line contains a random animal: dragon",
+			"Line 4 this line contains a random animal: rooster",
+			"Line 3 this line contains a random animal: pig",
+			"Line 2 this line contains a random animal: tiger",
+			"Line 1 this line contains a random animal: pig",
+		}
+		lines, err := file.ReadLastNLines("5KB.txt", 100)
+		Expect(len(lines)).To(Equal(100))
+		Expect(lines[95:]).To(Equal(expectedLines))
+		Expect(err).To(BeNil())
+	})
+
+	It("works for medium files", func() {
+		expectedLines := []string{
+			"Line 99005 this line contains a random animal: monkey",
+			"Line 99004 this line contains a random animal: ox",
+			"Line 99003 this line contains a random animal: tiger",
+			"Line 99002 this line contains a random animal: snake",
+			"Line 99001 this line contains a random animal: snake",
+		}
+		lines, err := file.ReadLastNLines("5MB.txt", 1000)
+		Expect(len(lines)).To(Equal(1000))
+		Expect(lines[995:]).To(Equal(expectedLines))
+		Expect(err).To(BeNil())
+	})
+
+	It("works for large files", func() {
+		expectedLines := []string{
+			"Line 19000005 this line contains a random animal: horse",
+			"Line 19000004 this line contains a random animal: snake",
+			"Line 19000003 this line contains a random animal: dog",
+			"Line 19000002 this line contains a random animal: pig",
+			"Line 19000001 this line contains a random animal: snake",
+		}
+		lines, err := file.ReadLastNLines("1GB.txt", 1000000)
+		Expect(len(lines)).To(Equal(1000000))
+		Expect(lines[999995:]).To(Equal(expectedLines))
+		Expect(err).To(BeNil())
+	})
+})
