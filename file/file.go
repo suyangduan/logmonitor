@@ -219,7 +219,7 @@ func ReadLastLinesWithOffset(fileName string, fileOffset int64, initBufSize int)
 	return lastLines, int64(bufSize) - indices[0] - 1 + fileOffset, nil
 }
 
-func ReadLastNLines(fileName string, n int) ([]string, error) {
+func ReadLastNLinesWithKeyword(fileName string, n int, query string) ([]string, error) {
 	// buffer size 32KB
 	// Note: if log lines are longer than 32KB, the program won't work
 	initBufSize := 1 << 15
@@ -234,34 +234,13 @@ func ReadLastNLines(fileName string, n int) ([]string, error) {
 			panic(err)
 		}
 
-		lines = append(lines, newlines...)
-	}
-
-	if len(lines) >= n {
-		return lines[:n], nil
-	}
-
-	return lines, nil
-}
-
-func ReadLastNLinesWithQuery(fileName string, n int, query string) ([]string, error) {
-	// buffer size 32KB
-	// Note: if log lines are longer than 32KB, the program won't work
-	initBufSize := 1 << 15
-
-	lines := []string{}
-	var fileOffset int64 = 0
-	newlines := []string{"dummy"}
-	var err error
-	for len(lines) < n && len(newlines) != 0 {
-		newlines, fileOffset, err = ReadLastLinesWithOffset(fileName, fileOffset, initBufSize)
-		if err != nil {
-			panic(err)
-		}
-
-		for _, newline := range newlines {
-			if strings.Contains(newline, query) {
-				lines = append(lines, newline)
+		if query == "" {
+			lines = append(lines, newlines...)
+		} else {
+			for _, newline := range newlines {
+				if strings.Contains(newline, query) {
+					lines = append(lines, newline)
+				}
 			}
 		}
 	}
