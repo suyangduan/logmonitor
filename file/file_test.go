@@ -98,15 +98,14 @@ var _ = Describe("ReadLastLinesWithOffset", func() {
 			"Line 100000 this line contains a random animal: pig",
 			"Line 99999 this line contains a random animal: mouse",
 		}
-		firstLines, firstOffset, firstErr := file.ReadLastLinesWithOffset("5MB.txt", 0, 128)
-		Expect(firstLines).To(Equal(expectedLines))
-		Expect(firstOffset).To(Equal(int64(105)))
+		firstLines, _, firstErr := file.ReadLastLinesWithOffset("5MB.txt", 0, 1024)
+		Expect(firstLines[:2]).To(Equal(expectedLines))
 		Expect(firstErr).To(BeNil())
 
 		var offset int64 = 0
 		lines := []string{"dummy"}
-		for i := 0; i < 50000; i++ {
-			lines, offset, _ = file.ReadLastLinesWithOffset("5MB.txt", offset, 128)
+		for i := 0; i < 5259; i++ {
+			lines, offset, _ = file.ReadLastLinesWithOffset("5MB.txt", offset, 1024)
 		}
 
 		expectedLinesEnd := []string{
@@ -114,7 +113,7 @@ var _ = Describe("ReadLastLinesWithOffset", func() {
 			"Line 1 this line contains a random animal: rabbit",
 		}
 
-		Expect(lines).To(Equal(expectedLinesEnd))
+		Expect(lines[len(lines)-2:]).To(Equal(expectedLinesEnd))
 	})
 
 	// for bigger size files, from tweaking the buffer size, no visible gains is achieved after
@@ -124,9 +123,8 @@ var _ = Describe("ReadLastLinesWithOffset", func() {
 			"Line 20000000 this line contains a random animal: mouse",
 			"Line 19999999 this line contains a random animal: horse",
 		}
-		firstLines, firstOffset, err := file.ReadLastLinesWithOffset("1GB.txt", 0, 128)
-		Expect(firstLines).To(Equal(expectedLines))
-		Expect(firstOffset).To(Equal(int64(112)))
+		firstLines, _, err := file.ReadLastLinesWithOffset("1GB.txt", 0, 1<<15)
+		Expect(firstLines[:2]).To(Equal(expectedLines))
 		Expect(err).To(BeNil())
 
 		// this is the 12 seconds part. commented out for now

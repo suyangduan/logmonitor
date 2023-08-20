@@ -132,6 +132,7 @@ func ReadLastLines(fileName string) ([]string, error) {
 // ReadLastLinesWithOffset reads the last initBufSize bytes in front of the fileOffset bytes before EOF
 // fileOffset needs to be at a line break. otherwise the incomplete line at the end of the buffer will be lost
 // returns the complete lines in reverse order, a new offset for the next call and an error if any
+// Note: the initBufSize needs to be longer than the maximum length of a log line
 func ReadLastLinesWithOffset(fileName string, fileOffset int64, initBufSize int) ([]string, int64, error) {
 	file, err := os.Open(fileName)
 	if err != nil {
@@ -219,22 +220,14 @@ func ReadLastLinesWithOffset(fileName string, fileOffset int64, initBufSize int)
 }
 
 func ReadLastNLines(fileName string, n int) ([]string, error) {
-	stat, err := os.Stat(fileName)
-	if err != nil {
-		panic(err)
-	}
-
-	fileSize := stat.Size()
-	initBufSize := 128
-	// if the fileSize is bigger than 16MB, use a bigger buffer size
-	// TODO: the numbers are a bit random right now
-	if fileSize > 1<<24 {
-		initBufSize = 1 << 15
-	}
+	// buffer size 32KB
+	// Note: if log lines are longer than 32KB, the program won't work
+	initBufSize := 1 << 15
 
 	lines := []string{}
 	var fileOffset int64 = 0
 	newlines := []string{"dummy"}
+	var err error
 	for len(lines) < n && len(newlines) != 0 {
 		newlines, fileOffset, err = ReadLastLinesWithOffset(fileName, fileOffset, initBufSize)
 		if err != nil {
@@ -252,22 +245,14 @@ func ReadLastNLines(fileName string, n int) ([]string, error) {
 }
 
 func ReadLastNLinesWithQuery(fileName string, n int, query string) ([]string, error) {
-	stat, err := os.Stat(fileName)
-	if err != nil {
-		panic(err)
-	}
-
-	fileSize := stat.Size()
-	initBufSize := 128
-	// if the fileSize is bigger than 16MB, use a bigger buffer size
-	// TODO: the numbers are a bit random right now
-	if fileSize > 1<<24 {
-		initBufSize = 1 << 15
-	}
+	// buffer size 32KB
+	// Note: if log lines are longer than 32KB, the program won't work
+	initBufSize := 1 << 15
 
 	lines := []string{}
 	var fileOffset int64 = 0
 	newlines := []string{"dummy"}
+	var err error
 	for len(lines) < n && len(newlines) != 0 {
 		newlines, fileOffset, err = ReadLastLinesWithOffset(fileName, fileOffset, initBufSize)
 		if err != nil {
