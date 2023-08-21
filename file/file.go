@@ -219,6 +219,8 @@ func ReadLastLinesWithOffset(fileName string, fileOffset int64, initBufSize int)
 	return lastLines, int64(bufSize) - indices[0] - 1 + fileOffset, nil
 }
 
+// ReadLastNLinesWithKeyword keeps calling ReadLastLinesWithOffset until we reach the target lines of log
+// if input query is not empty, log lines are filtered first before they are appended
 func ReadLastNLinesWithKeyword(fileName string, n int, query string) ([]string, error) {
 	// buffer size 32KB
 	// Note: if log lines are longer than 32KB, the program won't work

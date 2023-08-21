@@ -6,9 +6,8 @@ import (
 	"strings"
 )
 
-// ReadLastLinesWithOffset reads the last initBufSize bytes in front of the fileOffset bytes before EOF
-// fileOffset needs to be at a line break. otherwise the incomplete line at the end of the buffer will be lost
-// returns the complete lines in reverse order, a new offset for the next call and an error if any
+// ReadLastLinesWithOffsetP reads the last initBufSize bytes in front of the fileOffset bytes before EOF
+// returns the lines (complete and segmented) in reverse order and an error if any
 // Note: the initBufSize needs to be longer than the maximum length of a log line
 func ReadLastLinesWithOffsetP(fileName string, fileOffset int64, initBufSize int) ([][]byte, error) {
 	if initBufSize == 0 {
@@ -80,6 +79,7 @@ func ReadLastLinesWithOffsetP(fileName string, fileOffset int64, initBufSize int
 		lastLines = append(lastLines, buf[indices[len(indices)-1]+1:])
 	}
 
+	// append bytes between two adjacent line breaks (a complete log line)
 	for i := 0; i < len(indices)-1; i++ {
 		endLineBreakIndex := indices[len(indices)-1-i]
 		startLineBreakIndex := indices[len(indices)-2-i]
@@ -92,6 +92,10 @@ func ReadLastLinesWithOffsetP(fileName string, fileOffset int64, initBufSize int
 	return lastLines, nil
 }
 
+// CombineLines combine content of the two adjacent buffers into one
+// the content of the buffer is expected to be already in reverse order
+// first and second refers to where they will be in the output (first will come before second)
+// in the original input log file, first should be immediately after the second buffer
 func CombineLines(first, second [][]byte) [][]byte {
 	if len(first) == 0 {
 		return second
@@ -115,6 +119,8 @@ func CombineLines(first, second [][]byte) [][]byte {
 
 const FILE_OFFSET_UNIT_SIZE = 1 << 15
 
+// ReadLastNLinesWithKeywordP keeps calling ReadLastLinesWithOffsetP until we reach the target lines of log
+// if input query is not empty, log lines are filtered first before they are appended
 func ReadLastNLinesWithKeywordP(fileName string, n int, query string) ([][]byte, error) {
 	initBufSize := FILE_OFFSET_UNIT_SIZE
 
@@ -129,6 +135,7 @@ func ReadLastNLinesWithKeywordP(fileName string, n int, query string) ([][]byte,
 	// given that the lines at the border of two buffers might both be segmented
 	// we need to keep a record of the last line of the previous result
 	// and join this last line with the new result (bar new last line) and search for keyword
+	// the new last line will be stored for next time when we have new results
 	rollingLastLine := []byte{}
 
 	// try to read one more line in case the last line is segmented
