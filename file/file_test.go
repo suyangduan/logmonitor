@@ -66,6 +66,31 @@ var _ = Describe("ReadLastLines", func() {
 	})
 })
 
+var _ = Describe("ReadLastLines edge cases", func() {
+	It("works as expected when there are empty lines", func() {
+		fileName := "5KBwithEmptyNewLines.txt"
+		expectedLines := []string{
+			"",
+			"Line 100 this line contains a random animal: ox",
+			"",
+			"Line 99 this line contains a random animal: tiger",
+			"",
+		}
+		Expect(file.ReadLastLines(fileName)).To(Equal(expectedLines))
+	})
+
+	// This test will fail unless we change the product code.
+	// We need to append the EOF index to indices at the very end in this case
+	//It("works as expected when there is no line break for the last line", func() {
+	//	fileName := "5KBwithNoLastLineBreak.txt"
+	//	expectedLines := []string{
+	//		"Line 100 this line contains a random animal: horse",
+	//		"Line 99 this line contains a random animal: rabbit",
+	//	}
+	//	Expect(file.ReadLastLines(fileName)).To(Equal(expectedLines))
+	//})
+})
+
 var _ = Describe("ReadLastLinesWithOffset", func() {
 	It("works as expected for 100 line file (5KB)", func() {
 		expectedLines := []string{
@@ -142,6 +167,66 @@ var _ = Describe("ReadLastLinesWithOffset", func() {
 		//
 		//Expect(lines[len(lines)-2:]).To(Equal(expectedLinesEnd))
 	})
+})
+
+var _ = Describe("ReadLastLinesWithOffset edge cases", func() {
+	It("works as expected when there are empty lines", func() {
+		expectedLines := []string{
+			"",
+			"Line 100 this line contains a random animal: ox",
+			"",
+			"Line 99 this line contains a random animal: tiger",
+			"",
+		}
+		fileName := "5KBwithEmptyNewLines.txt"
+
+		firstLines, firstOffset, firstErr := file.ReadLastLinesWithOffset(fileName, 0, 128)
+		Expect(firstLines).To(Equal(expectedLines))
+		Expect(firstOffset).To(Equal(int64(101)))
+		Expect(firstErr).To(BeNil())
+
+		var offset int64 = 0
+		lines := []string{}
+		for i := 0; i < 50; i++ {
+			lines, offset, _ = file.ReadLastLinesWithOffset(fileName, offset, 128)
+		}
+
+		expectedLinesEnd := []string{
+			"Line 2 this line contains a random animal: horse",
+			"",
+			"Line 1 this line contains a random animal: horse",
+		}
+
+		Expect(lines).To(Equal(expectedLinesEnd))
+	})
+
+	// This test will fail unless we change the product code.
+	// We need to append the EOF index to indices at the very end when fileOffset is 0 in this case
+	//It("works as expected when there is no line break for the last line", func() {
+	//	expectedLines := []string{
+	//		"Line 100 this line contains a random animal: horse",
+	//		"Line 99 this line contains a random animal: rabbit",
+	//	}
+	//	fileName := "5KBwithNoLastLineBreak.txt"
+	//
+	//	firstLines, firstOffset, firstErr := file.ReadLastLinesWithOffset(fileName, 0, 128)
+	//	Expect(firstLines).To(Equal(expectedLines))
+	//	Expect(firstOffset).To(Equal(int64(101)))
+	//	Expect(firstErr).To(BeNil())
+	//
+	//	var offset int64 = 0
+	//	lines := []string{}
+	//	for i := 0; i < 50; i++ {
+	//		lines, offset, _ = file.ReadLastLinesWithOffset(fileName, offset, 128)
+	//	}
+	//
+	//	expectedLinesEnd := []string{
+	//		"Line 2 this line contains a random animal: rooster",
+	//		"Line 1 this line contains a random animal: dragon",
+	//	}
+	//
+	//	Expect(lines).To(Equal(expectedLinesEnd))
+	//})
 })
 
 var _ = Describe("ReadLastNLinesWithKeyword", func() {
