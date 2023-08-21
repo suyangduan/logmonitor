@@ -22,6 +22,4 @@ go.work
 
 .idea/
 
-logmonitor
-
 .DS_Store
