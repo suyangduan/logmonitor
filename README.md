@@ -6,7 +6,7 @@ Essentially it returns the original log file in reverse line order.
 
 ## Usage
 
-Run `logmonitor` excutable file under the root directory on the target machine, and it will start a REST API server.
+Run `logmonitor` (Apple M1 chip) or `logmonitor-x86` (Intel chip) excutable file under the root directory on the target machine, and it will start a REST API server.
 
 Endpoint: `localhost:8080/api/v1/logs`
 
