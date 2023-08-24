@@ -134,6 +134,12 @@ const FILE_OFFSET_UNIT_SIZE = 1 << 15
 func ReadLastNLinesWithKeywordP(fileName string, n int, query string) ([][]byte, error) {
 	initBufSize := FILE_OFFSET_UNIT_SIZE
 
+	return ReadLastNLinesWithKeywordPInternal(fileName, n, initBufSize, query)
+}
+
+// ReadLastNLinesWithKeywordPInternal is internal use only!!
+// expose the buf size for testing
+func ReadLastNLinesWithKeywordPInternal(fileName string, n int, initBufSize int, query string) ([][]byte, error) {
 	lines := [][]byte{}
 	fileOffsetCounter := 0
 	newlines := [][]byte{[]byte("dummy")}
@@ -171,8 +177,16 @@ func ReadLastNLinesWithKeywordP(fileName string, n int, query string) ([][]byte,
 		if query == "" {
 			lines = CombineLines(lines, newlines)
 		} else {
-			combinedNewLines := CombineLines([][]byte{rollingLastLine}, newlines[:len(newlines)-1])
-			rollingLastLine = newlines[len(newlines)-1]
+			combinedNewLines := [][]byte{}
+			// if there's only one new line, don't bother save it to the rolling last line
+			// because there won't be next round of buffer reading
+			if len(newlines) == 1 {
+				combinedNewLines = CombineLines([][]byte{rollingLastLine}, newlines)
+				rollingLastLine = []byte{}
+			} else {
+				combinedNewLines = CombineLines([][]byte{rollingLastLine}, newlines[:len(newlines)-1])
+				rollingLastLine = newlines[len(newlines)-1]
+			}
 
 			for _, newline := range combinedNewLines {
 				if strings.Contains(string(newline), query) {

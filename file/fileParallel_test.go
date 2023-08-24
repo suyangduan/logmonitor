@@ -247,6 +247,13 @@ var _ = Describe("ReadLastNLinesWithKeywordP", func() {
 		Expect(err).To(BeNil())
 	})
 
+	It("works for rolling last line edge case", func() {
+		fileName := "5KB.txt"
+		lines, err := file.ReadLastNLinesWithKeywordP(fileName, 100, "pig")
+		Expect(lines[len(lines)-1]).To(Equal([]byte("Line 1 this line contains a random animal: pig\n")))
+		Expect(err).To(BeNil())
+	})
+
 	It("works for medium files", func() {
 		expectedLines := [][]byte{
 			[]byte("Line 98813 this line contains a random animal: ox\n"),
@@ -312,6 +319,13 @@ var _ = Describe("ReadLastNLinesWithKeywordP", func() {
 		Expect(len(lines)).To(Equal(1000000))
 		Expect(lines[999995:]).To(Equal(expectedLines))
 		Expect(err).To(BeNil())
+	})
+})
+
+var _ = Describe("ReadLastNLinesWithKeywordPInternal", func() {
+	It("works when the last read is a segmented first line", func() {
+		lines, _ := file.ReadLastNLinesWithKeywordPInternal("2line.txt", 2, 60, "pig")
+		Expect(lines).To(Equal([][]byte{[]byte("Line 1 this line contains a random animal: pig\n")}))
 	})
 })
 
