@@ -134,15 +134,8 @@ func ReadLastLinesWithOffset(fileName string, fileOffset int64, initBufSize int)
 		// and then read everything in between
 		endLineBreakIndex := indices[len(indices)-1-i]
 		startLineBreakIndex := indices[len(indices)-2-i]
-		bufferSize := endLineBreakIndex - startLineBreakIndex - 1
 
-		newBuf := make([]byte, bufferSize)
-		_, err = file.ReadAt(newBuf, curBufStart+startLineBreakIndex+1)
-		if err == nil {
-			lastLines = append(lastLines, string(newBuf))
-		} else {
-			return lastLines, 0, err
-		}
+		lastLines = append(lastLines, string(buf[startLineBreakIndex+1:endLineBreakIndex]))
 	}
 
 	// if this is the beginning of the file, append the first line

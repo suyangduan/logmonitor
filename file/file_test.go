@@ -142,7 +142,7 @@ var _ = Describe("ReadLastLinesWithOffset", func() {
 	})
 
 	// for bigger size files, from tweaking the buffer size, no visible gains is achieved after
-	// buffer size reaches 1<<15 byte (32KB). Right now this test runs about 12 seconds on a macbook air
+	// buffer size reaches 1<<15 byte (32KB). Right now this test runs about 3.5 seconds on a macbook air
 	It("works as expected for 20M line file (1GB)", func() {
 		expectedLines := []string{
 			"Line 20000000 this line contains a random animal: mouse",
@@ -152,7 +152,7 @@ var _ = Describe("ReadLastLinesWithOffset", func() {
 		Expect(firstLines[:2]).To(Equal(expectedLines))
 		Expect(err).To(BeNil())
 
-		// this is the 12 seconds part. commented out for now
+		// this is the 3.5 seconds part. commented out for now
 
 		//var offset int64 = 0
 		//lines := []string{"dummy"}
@@ -308,34 +308,34 @@ var _ = Describe("ReadLastNLinesWithKeyword", func() {
 
 	// this test adds about 1 second
 
-	//It("works for large files", func() {
-	//	expectedLines := []string{
-	//		"Line 18803427 this line contains a random animal: snake",
-	//		"Line 18803418 this line contains a random animal: snake",
-	//		"Line 18803417 this line contains a random animal: snake",
-	//		"Line 18803416 this line contains a random animal: snake",
-	//		"Line 18803410 this line contains a random animal: snake",
-	//	}
-	//	lines, err := file.ReadLastNLinesWithKeyword("1GB.txt", 100000, "snake")
-	//	Expect(len(lines)).To(Equal(100000))
-	//	Expect(lines[99995:]).To(Equal(expectedLines))
-	//	Expect(err).To(BeNil())
-	//})
+	It("works for large files", func() {
+		expectedLines := []string{
+			"Line 18803427 this line contains a random animal: snake",
+			"Line 18803418 this line contains a random animal: snake",
+			"Line 18803417 this line contains a random animal: snake",
+			"Line 18803416 this line contains a random animal: snake",
+			"Line 18803410 this line contains a random animal: snake",
+		}
+		lines, err := file.ReadLastNLinesWithKeyword("1GB.txt", 100000, "snake")
+		Expect(len(lines)).To(Equal(100000))
+		Expect(lines[99995:]).To(Equal(expectedLines))
+		Expect(err).To(BeNil())
+	})
 
 	// this test adds about 600ms
 
-	//It("works for large files for longer queries", func() {
-	//	expectedLines := []string{
-	//		"Line 19000005 this line contains a random animal: horse",
-	//		"Line 19000004 this line contains a random animal: snake",
-	//		"Line 19000003 this line contains a random animal: dog",
-	//		"Line 19000002 this line contains a random animal: pig",
-	//		"Line 19000001 this line contains a random animal: snake",
-	//	}
-	//	lines, err := file.ReadLastNLinesWithKeyword("1GB.txt", 1000000,
-	//		"this line contains a random animal")
-	//	Expect(len(lines)).To(Equal(1000000))
-	//	Expect(lines[999995:]).To(Equal(expectedLines))
-	//	Expect(err).To(BeNil())
-	//})
+	It("works for large files for longer queries", func() {
+		expectedLines := []string{
+			"Line 19000005 this line contains a random animal: horse",
+			"Line 19000004 this line contains a random animal: snake",
+			"Line 19000003 this line contains a random animal: dog",
+			"Line 19000002 this line contains a random animal: pig",
+			"Line 19000001 this line contains a random animal: snake",
+		}
+		lines, err := file.ReadLastNLinesWithKeyword("1GB.txt", 1000000,
+			"this line contains a random animal")
+		Expect(len(lines)).To(Equal(1000000))
+		Expect(lines[999995:]).To(Equal(expectedLines))
+		Expect(err).To(BeNil())
+	})
 })
