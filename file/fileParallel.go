@@ -90,6 +90,10 @@ func RevertBufferByLineBreak(buf []byte) [][]byte {
 		endLineBreakIndex := indices[len(indices)-1-i]
 		startLineBreakIndex := indices[len(indices)-2-i]
 
+		// Here we include the second line break as part of the output instead of stripping it
+		// this information is useful when we try to combine outputs from two ReadLastLinesWithOffsetP
+		// if the first neighboring segment ends with a line break, then we append
+		// if it doesn't we concatenate instead. See implementation of CombineLines
 		reverseBuf = append(reverseBuf, buf[startLineBreakIndex+1:endLineBreakIndex+1])
 	}
 
