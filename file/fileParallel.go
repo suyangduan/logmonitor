@@ -52,6 +52,12 @@ func ReadLastLinesWithOffsetP(fileName string, fileOffset int64, initBufSize int
 		panic(err)
 	}
 
+	return RevertBufferByLineBreak(buf), nil
+}
+
+// RevertBufferByLineBreak split the input buf by line break byte
+// Return the segments in reverse order
+func RevertBufferByLineBreak(buf []byte) [][]byte {
 	// find all the line break's locations (their index within the buffer)
 	offset := 0
 	indices := []int64{}
@@ -69,14 +75,14 @@ func ReadLastLinesWithOffsetP(fileName string, fileOffset int64, initBufSize int
 	// no line break in the buffer
 	// append the whole thing and return
 	if len(indices) == 0 {
-		return [][]byte{buf}, nil
+		return [][]byte{buf}
 	}
 
-	lastLines := [][]byte{}
+	reverseBuf := [][]byte{}
 	// if the last line break is not at the end of the buffer
 	// append the segment from last line break to the end of buffer first
 	if indices[len(indices)-1] != int64(len(buf)-1) {
-		lastLines = append(lastLines, buf[indices[len(indices)-1]+1:])
+		reverseBuf = append(reverseBuf, buf[indices[len(indices)-1]+1:])
 	}
 
 	// append bytes between two adjacent line breaks (a complete log line)
@@ -84,12 +90,12 @@ func ReadLastLinesWithOffsetP(fileName string, fileOffset int64, initBufSize int
 		endLineBreakIndex := indices[len(indices)-1-i]
 		startLineBreakIndex := indices[len(indices)-2-i]
 
-		lastLines = append(lastLines, buf[startLineBreakIndex+1:endLineBreakIndex+1])
+		reverseBuf = append(reverseBuf, buf[startLineBreakIndex+1:endLineBreakIndex+1])
 	}
 
-	lastLines = append(lastLines, buf[:indices[0]+1])
+	reverseBuf = append(reverseBuf, buf[:indices[0]+1])
 
-	return lastLines, nil
+	return reverseBuf
 }
 
 // CombineLines combine content of the two adjacent buffers into one

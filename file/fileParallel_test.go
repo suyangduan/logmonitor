@@ -314,3 +314,30 @@ var _ = Describe("ReadLastNLinesWithKeywordP", func() {
 		Expect(err).To(BeNil())
 	})
 })
+
+var _ = Describe("RevertBufferByLineBreak", func() {
+	It("works as expected with no line break at the end", func() {
+		input := []byte("\n\nhello\nworld\nagain")
+		output := file.RevertBufferByLineBreak(input)
+		Expect(output).To(Equal([][]byte{
+			[]byte("again"),
+			[]byte("world\n"),
+			[]byte("hello\n"),
+			[]byte("\n"),
+			[]byte("\n"),
+		}))
+	})
+
+	It("works as expected with line breaks at the end", func() {
+		input := []byte("\n\nhello\nworld\nagain\n\n")
+		output := file.RevertBufferByLineBreak(input)
+		Expect(output).To(Equal([][]byte{
+			[]byte("\n"),
+			[]byte("again\n"),
+			[]byte("world\n"),
+			[]byte("hello\n"),
+			[]byte("\n"),
+			[]byte("\n"),
+		}))
+	})
+})
