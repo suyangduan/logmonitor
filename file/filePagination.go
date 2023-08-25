@@ -105,12 +105,18 @@ func ReadLastLinesWithOffsetPagination(fileName string, fileOffset int64, initBu
 // until we reach the target lines of log.
 // if input query is not empty, log lines are filtered first before they are appended
 func ReadLastNLinesWithKeywordPagination(fileName string, n int, query string, offset int64) ([]string, int64, error) {
-	initBufSize := READ_BUFFER_SIZE
+	return ReadLastNLinesWithKeywordPaginationInternal(fileName, n, query, offset, READ_BUFFER_SIZE)
+}
+
+// ReadLastNLinesWithKeywordPaginationInternal exposes buffer size for testing only
+// internal only!!!
+func ReadLastNLinesWithKeywordPaginationInternal(
+	fileName string, n int, query string, offset int64, initBufSize int) ([]string, int64, error) {
 	lines := []LineReturn{}
-	newlines := []LineReturn{{"", 0}}
+	newlines := []LineReturn{{"", offset}}
 	var err error
 	for len(lines) < n && len(newlines) != 0 {
-		newlines, err = ReadLastLinesWithOffsetPagination(fileName, offset, initBufSize)
+		newlines, err = ReadLastLinesWithOffsetPagination(fileName, newlines[len(newlines)-1].Offset, initBufSize)
 		if err != nil {
 			panic(err)
 		}

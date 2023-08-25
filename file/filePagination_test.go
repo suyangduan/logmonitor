@@ -64,4 +64,82 @@ var _ = Describe("ReadLastNLinesWithKeywordPagination", func() {
 		Expect(offset).To(Equal(int64(4980)))
 		Expect(err).To(BeNil())
 	})
+
+	It("works for medium files without query", func() {
+		fileName := "5MB.txt"
+		expectedLines := []string{
+			"Line 2 this line contains a random animal: pig",
+			"Line 1 this line contains a random animal: rabbit",
+		}
+
+		newlines := []string{}
+		var offset int64 = 0
+		var err error
+		for i := 0; i < 50; i++ {
+			newlines, offset, err = file.ReadLastNLinesWithKeywordPagination(fileName, 2000, "", offset)
+		}
+
+		Expect(newlines[len(newlines)-2:]).To(Equal(expectedLines))
+		Expect(offset).To(Equal(int64(5256265)))
+		Expect(err).To(BeNil())
+	})
+
+	It("works for medium files with query", func() {
+		fileName := "5MB.txt"
+		expectedLines := []string{
+			"Line 3 this line contains a random animal: rabbit",
+			"Line 1 this line contains a random animal: rabbit",
+		}
+
+		newlines := []string{""}
+		var offset int64 = 0
+		var err error
+		for i := 0; i < 5; i++ {
+			newlines, offset, err = file.ReadLastNLinesWithKeywordPagination(fileName, 2000, "rabbit", offset)
+		}
+
+		Expect(newlines[len(newlines)-2:]).To(Equal(expectedLines))
+		Expect(offset).To(Equal(int64(5256265)))
+		Expect(err).To(BeNil())
+	})
+})
+
+var _ = Describe("ReadLastNLinesWithKeywordPaginationInternal", func() {
+	It("works for small files and a small buffer size without query", func() {
+		fileName := "/var/log/var5KB.txt"
+		expectedLines := []string{
+			"Line 2 this line contains a random animal: tiger",
+			"Line 1 this line contains a random animal: pig",
+		}
+
+		newlines := []string{}
+		var offset int64 = 0
+		var err error
+		for i := 0; i < 50; i++ {
+			newlines, offset, err = file.ReadLastNLinesWithKeywordPaginationInternal(fileName, 2, "", offset, 60)
+		}
+
+		Expect(newlines).To(Equal(expectedLines))
+		Expect(offset).To(Equal(int64(4980)))
+		Expect(err).To(BeNil())
+	})
+
+	It("works for small files and a small buffer size with query", func() {
+		fileName := "/var/log/var5KB.txt"
+		expectedLines := []string{
+			"Line 3 this line contains a random animal: pig",
+			"Line 1 this line contains a random animal: pig",
+		}
+
+		newlines := []string{"dummy"}
+		var offset int64 = 0
+		var err error
+		for i := 0; i < 4; i++ {
+			newlines, offset, err = file.ReadLastNLinesWithKeywordPaginationInternal(fileName, 2, "pig", offset, 60)
+		}
+
+		Expect(newlines).To(Equal(expectedLines))
+		Expect(offset).To(Equal(int64(4980)))
+		Expect(err).To(BeNil())
+	})
 })
