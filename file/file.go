@@ -90,13 +90,17 @@ func ReadLastLinesWithOffset(fileName string, fileOffset int64, initBufSize int)
 	return lastLines, int64(bufSize) - indices[0] - 1 + fileOffset, nil
 }
 
+// Each time we read from the end of the file a buffer of size 32KB
+// if log lines are longer than 32KB, the program won't work
+// this is because we're only returning full log lines during each round
+// if the log line is longer than 32KB, then the buffer only contains a segmented line which
+// will be discarded during the current round and attempted again and again (into infinite loop)
+const READ_BUFFER_SIZE = 1 << 15
+
 // ReadLastNLinesWithKeyword keeps calling ReadLastLinesWithOffset until we reach the target lines of log.
 // if input query is not empty, log lines are filtered first before they are appended
 func ReadLastNLinesWithKeyword(fileName string, n int, query string) ([]string, error) {
-	// buffer size 32KB
-	// Note: if log lines are longer than 32KB, the program won't work
-	initBufSize := 1 << 15
-
+	initBufSize := READ_BUFFER_SIZE
 	lines := []string{}
 	var fileOffset int64 = 0
 	newlines := []string{"dummy"}
