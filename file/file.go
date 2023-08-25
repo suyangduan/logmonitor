@@ -6,66 +6,6 @@ import (
 	"strings"
 )
 
-const READ_BUFFER_SIZE = 128
-
-// ReadLastLines reads a buffer size of READ_BUFFER_SIZE at the end of a file
-// returns full lines within that buffer in reverse order and an error if any
-func ReadLastLines(fileName string) ([]string, error) {
-	file, err := os.Open(fileName)
-	if err != nil {
-		panic(err)
-	}
-	defer file.Close()
-
-	buf := make([]byte, READ_BUFFER_SIZE)
-	stat, err := os.Stat(fileName)
-	if err != nil {
-		panic(err)
-	}
-
-	fileSize := stat.Size()
-	curBufStart := fileSize - READ_BUFFER_SIZE
-	if fileSize < READ_BUFFER_SIZE {
-		curBufStart = 0
-	}
-	_, err = file.ReadAt(buf, curBufStart)
-	if err != nil {
-		panic(err)
-	}
-
-	// find all the line break's locations (their index within the buffer)
-	offset := 0
-	indices := []int64{}
-	for {
-		index := bytes.IndexByte(buf[offset:], '\n')
-		// no more line breaks
-		if index == -1 {
-			break
-		}
-
-		indices = append(indices, int64(index+offset))
-		offset += index + 1
-	}
-
-	lastLines := []string{}
-	for i := 0; i < len(indices)-1; i++ {
-		// create a buffer the size between two line breaks (excluding the second line break)
-		// and then read everything in between
-		endLineBreakIndex := indices[len(indices)-1-i]
-		startLineBreakIndex := indices[len(indices)-2-i]
-		bufferSize := endLineBreakIndex - startLineBreakIndex - 1
-		newBuf := make([]byte, bufferSize)
-		_, err = file.ReadAt(newBuf, curBufStart+startLineBreakIndex+1)
-		if err == nil {
-			lastLines = append(lastLines, string(newBuf))
-		} else {
-			return lastLines, err
-		}
-	}
-
-	return lastLines, nil
-}
-
 // ReadLastLinesWithOffset reads the last initBufSize bytes in front of the fileOffset bytes before EOF
 // fileOffset needs to be at a line break. otherwise the incomplete line at the end of the buffer will be lost
 // returns the complete lines in reverse order, a new offset for the next call and an error if any

@@ -6,58 +6,6 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("ReadLastLines", func() {
-	It("works as expected for 100 line file (5KB)", func() {
-		fileName := "/var/log/var5KB.txt"
-		expectedLines := []string{
-			"Line 100 this line contains a random animal: dragon",
-			"Line 99 this line contains a random animal: mouse",
-		}
-		Expect(file.ReadLastLines(fileName)).To(Equal(expectedLines))
-	})
-
-	It("works as expected for 100k line file (5MB)", func() {
-		expectedLines := []string{
-			"Line 100000 this line contains a random animal: pig",
-			"Line 99999 this line contains a random animal: mouse",
-		}
-		Expect(file.ReadLastLines("5MB.txt")).To(Equal(expectedLines))
-	})
-
-	It("works as expected for 20M line file (1GB)", func() {
-		expectedLines := []string{
-			"Line 20000000 this line contains a random animal: mouse",
-			"Line 19999999 this line contains a random animal: horse",
-		}
-		Expect(file.ReadLastLines("1GB.txt")).To(Equal(expectedLines))
-	})
-})
-
-var _ = Describe("ReadLastLines edge cases", func() {
-	It("works as expected when there are empty lines", func() {
-		fileName := "5KBwithEmptyNewLines.txt"
-		expectedLines := []string{
-			"",
-			"Line 100 this line contains a random animal: ox",
-			"",
-			"Line 99 this line contains a random animal: tiger",
-			"",
-		}
-		Expect(file.ReadLastLines(fileName)).To(Equal(expectedLines))
-	})
-
-	// This test will fail unless we change the product code.
-	// We need to append the EOF index to indices at the very end in this case
-	//It("works as expected when there is no line break for the last line", func() {
-	//	fileName := "5KBwithNoLastLineBreak.txt"
-	//	expectedLines := []string{
-	//		"Line 100 this line contains a random animal: horse",
-	//		"Line 99 this line contains a random animal: rabbit",
-	//	}
-	//	Expect(file.ReadLastLines(fileName)).To(Equal(expectedLines))
-	//})
-})
-
 var _ = Describe("ReadLastLinesWithOffset", func() {
 	It("works as expected for 100 line file (5KB)", func() {
 		expectedLines := []string{
