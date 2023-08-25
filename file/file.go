@@ -130,8 +130,7 @@ func ReadLastLinesWithOffset(fileName string, fileOffset int64, initBufSize int)
 
 	lastLines := []string{}
 	for i := 0; i < len(indices)-1; i++ {
-		// create a buffer the size between two line breaks (excluding the second line break)
-		// and then read everything in between
+		// between two adjacent line breaks is a complete line
 		endLineBreakIndex := indices[len(indices)-1-i]
 		startLineBreakIndex := indices[len(indices)-2-i]
 
@@ -139,17 +138,19 @@ func ReadLastLinesWithOffset(fileName string, fileOffset int64, initBufSize int)
 	}
 
 	// if this is the beginning of the file, append the first line
-	// (which doesn't start with a line break :facepalm)
+	// which starts at the beginning of the buffer and ends at the first line break
 	if curBufStart == 0 {
 		lastLines = append(lastLines, string(buf[:indices[0]]))
-		// set fileOffset to be file size, indication we're scanned through
+		// set fileOffset to be file size, indicating we've scanned through
 		return lastLines, fileSize, nil
 	}
 
+	// the new offset indicates the first line break's location from the end of the file
+	// which will be the end location of next round of buffer reading
 	return lastLines, int64(bufSize) - indices[0] - 1 + fileOffset, nil
 }
 
-// ReadLastNLinesWithKeyword keeps calling ReadLastLinesWithOffset until we reach the target lines of log
+// ReadLastNLinesWithKeyword keeps calling ReadLastLinesWithOffset until we reach the target lines of log.
 // if input query is not empty, log lines are filtered first before they are appended
 func ReadLastNLinesWithKeyword(fileName string, n int, query string) ([]string, error) {
 	// buffer size 32KB
